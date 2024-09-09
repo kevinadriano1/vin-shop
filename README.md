@@ -120,7 +120,7 @@ Run the project command instruction that is in the PWS project page.
 
 ## 2. The Diagram
 
-![](image/diagram.png)
+![](image/diagram.jpg)
 
 urls.py: urls.py directs the incoming request to a specific function in views.py based on the URL pattern. For example, if a user visits /products/, urls.py may route this to a product_list function in views.py.
 views.py: A view function may interact with the database by querying or updating data using the models defined in models.py
