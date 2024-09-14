@@ -1,6 +1,8 @@
 # vin-shop
 ## Link : http://kevin-adriano-vinshop.pbp.cs.ui.ac.id/
 
+## assignment 1
+
 ### 1. Create a new Django project:
 
 Use django-admin startproject vin_shop . to create a new project. This command sets up the essential files for a Django project, including settings.py and urls.py.
@@ -141,3 +143,130 @@ Django is a high level framework that simplifies complexity, allows beginner to 
 
 ## 5. What is ORM?
 Django allows you to define your database schema using Python classes,ORM handles the translation between the object-oriented data model used in your application and the relational data model used in the database, When you create an instance of a model and save it, the ORM translates this operation into SQL commands that interact with the database, you can interact with the database using Python code rather than writing raw SQL queries
+
+## assignment 2
+
+### 1. why we need data delivery in implementing a platform
+Data delivery plays a vital role in platform implementation by facilitating smooth communication between system components and users. It powers essential functions such as real-time interactions, data processing, and user engagement. Effective data delivery improves user experience, maintains data integrity and security, enables scalability, and ensures compliance with industry regulations.
+
+### 2. which is better, XML or JSON? Why is JSON more popular than XML?
+JSON because it is simpler, more lightweight, and easier to work with, it is more popular because JSON (JavaScript Object Notation) has a straightforward structure that's easy to read and write, using key-value pairs and arrays, JSON has less syntactical overhead than XML, JSON is native to JavaScript, JSON is more human-readable and easier to understand
+
+### 3. functional usage of is_valid() method in Django forms. Also explain why we need the method in forms.
+The is_valid() method in Django forms is used to validate form data and check whether the form's input conforms to the specified rules.
+It centralizes the validation logic within the form, enabling Django to automatically verify that the data adheres to the criteria specified for each field. This prevents the processing of invalid or malicious data, ensuring that only clean, valid information is saved to the database or utilized in operations. Using is_valid() simplifies the workflow by checking for validity, processing valid data, or displaying errors if the data is invalid.
+
+### 4.Why do we need csrf_token when creating a form in Django? What could happen if we did not use csrf_token on a Django form? How could this be leveraged by an attacker?
+The csrf_token is a unique, secret token included in forms that are submitted to a Django view. It serves as a security mechanism to ensure that the form submission is coming from the legitimate user and not from an unauthorized third party. If the csrf_token is not included in a form, Django's CSRF protection won't be active, leaving the application vulnerable to CSRF attacks. An attacker could craft a malicious form on another website that submits a request to the Django application (e.g., transferring funds, changing account details) using the victim’s browser session.
+
+### 5. Create a form input to add a model object
+you need create forms.py in the main directiory add the following code:
+```
+from django.forms import ModelForm
+from main.models import Product
+
+class ProductForm(ModelForm):
+    class Meta:
+        model = Product
+        fields = ["name", "price", "description", "rating"]
+```
+
+update views.py
+
+```
+def create_product_entry(request):
+    form = ProductForm(request.POST or None)
+
+    if form.is_valid() and request.method == "POST":
+        form.save()
+        return redirect('main:show_main')
+
+    context = {'form': form}
+    return render(request, "create_product_entry.html", context)
+```
+
+create create_product_entry.html
+
+```
+{% extends 'base.html' %} 
+{% block content %}
+<h1>Add New Product Entry</h1>
+
+<form method="POST">
+  {% csrf_token %}
+  <table>
+    {{ form.as_table }}
+    <tr>
+      <td></td>
+      <td>
+        <input type="submit" value="Add Product Entry" />
+      </td>
+    </tr>
+  </table>
+</form>
+
+{% endblock %}
+```
+
+### 6. Add 4 views to view the added objects in XML, JSON, XML by ID, and JSON by ID formats.
+
+add the following code in views.py 
+
+XML
+```
+def show_xml(request):
+    data = Product.objects.all()
+    return HttpResponse(serializers.serialize("xml", data), content_type="application/xml")
+```
+
+JSON
+```
+def show_json(request):
+    data = Product.objects.all()
+    return HttpResponse(serializers.serialize("json", data), content_type="application/json")
+```
+
+XML by id
+```
+def show_xml_by_id(request, id):
+    data = Product.objects.filter(pk=id)
+    return HttpResponse(serializers.serialize("xml", data), content_type="application/xml")
+```
+
+JSON by id
+```
+def show_json_by_id(request, id):
+    data = Product.objects.filter(pk=id)
+    return HttpResponse(serializers.serialize("json", data), content_type="application/json")
+```
+
+### 7. Create URL routing for each of the views added in point 2
+import and add the url path in the urls.py in the main directory
+
+```
+from django.urls import path
+from main.views import show_main, create_product_entry, show_xml, show_json, show_xml_by_id, show_json_by_id
+
+
+app_name = 'main'
+
+urlpatterns = [
+    path('', show_main, name='show_main'),
+    path('create-product-entry', create_product_entry, name='create_product_entry'),
+    path('xml/', show_xml, name='show_xml'),
+    path('json/', show_json, name='show_json'),
+    path('xml/<str:id>/', show_xml_by_id, name='show_xml_by_id'),
+    path('json/<str:id>/', show_json_by_id, name='show_json_by_id'),
+]
+```
+
+### 8. screenshots
+XML and XML by id
+![](image/localhost_xml.png)
+![](image/localhost_xml_id.png)
+
+JSON and JSON by id
+![](image/localhost_json.png)
+![](image/localhost_json_id.png)
+
+
