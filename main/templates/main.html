@@ -1,14 +1,43 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>main</title>
-</head>
-<body>
-    <h1>{{ app_name }}</h1>
-    <p>Name: {{ name }}</p>
-    <p>npm: {{ npm }}</p>
-    <p>Class: {{ class }}</p>
-</body>
-</html>
+{% extends 'base.html' %}
+{% block content %}
+<h1>vin-shop</h1>
+
+<h5>NPM: </h5>
+<p>{{ npm }}<p>
+
+<h5>Name:</h5>
+<p>{{ myname }}</p>
+
+<h5>Class:</h5>
+<p>{{ class }}</p>
+
+{% if not product_entries %}
+<p>There are no product data in mental health tracker.</p>
+{% else %}
+<table>
+  <tr>
+    <th>Product Name</th>
+    <th>Price</th>
+    <th>Description</th>
+    <th>Rating</th>
+  </tr>
+
+  {% comment %} This is how to display mood data
+  {% endcomment %} 
+  {% for product_entry in product_entries %}
+  <tr>
+    <td>{{product_entry.name}}</td>
+    <td>{{product_entry.price}}</td>
+    <td>{{product_entry.description}}</td>
+    <td>{{product_entry.rating}}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endif %}
+
+<br />
+
+<a href="{% url 'main:create_product_entry' %}">
+  <button>Add New Product Entry</button>
+</a>
+{% endblock content %}
