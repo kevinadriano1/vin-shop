@@ -1,5 +1,5 @@
 # vin-shop
-## Link : http://kevin-adriano-vinshop.pbp.cs.ui.ac.id/
+## Link : http://kevin-adriano-vinshop.pbp.cs.ui.ac.id/login/?next=/
 
 ## assignment 2
 
