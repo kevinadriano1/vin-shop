@@ -269,4 +269,29 @@ JSON and JSON by id
 ![](image/localhost_json.png)
 ![](image/localhost_json_id.png)
 
+## assignment 3
 
+### difference between HttpResponseRedirect() and redirect()
+HttpResponseRedirect requires a direct URL as an argument and manually sets the redirect location in the HTTP response. It's straightforward but less versatile. redirect() is a shortcut that offers more flexibility. It can accept a URL, view name, or model instance, automatically resolving to the appropriate redirect destination. Additionally, redirect() allows you to perform permanent redirects by setting a parameter, making it more convenient for various scenarios.
+
+### how the MoodEntry model is linked with User
+add this in your models.py
+```
+user = models.ForeignKey(User, on_delete=models.CASCADE)
+```
+The line user = models.ForeignKey(User, on_delete=models.CASCADE) in Django creates a foreign key relationship between the model and the User model, ensuring that when a user is deleted, all related records in the model are also deleted.
+
+add this in your create_product_entry:
+```
+mood_entry = form.save(commit=False)
+mood_entry.user = request.user
+mood_entry.save()
+return redirect('main:show_main')
+```
+
+### difference between authentication and authorization, and what happens when a user logs in? Explain how Django implements these two concepts.
+Authentication: This is the process of verifying a user's identity, typically by checking credentials like a username and password.
+Authorization: This process occurs after authentication and determines what actions or resources the authenticated user is allowed to access.
+When a user provides their credentials (e.g., username and password), Django checks them against its database of registered users to verify the user's identity. If the credentials are correct, Django creates a session, which is stored on the server-side and identified by a session ID cookie on the user's browser. Once logged in, Django checks the user's permissions to determine what views, actions, or resources they are authorized to access, based on their role or group in the system. Django implements authentication using the auth framework and handles authorization through permissions and groups tied to users or models.
+
+### How does Django remember logged-in users? Explain other uses of cookies and whether all cookies are safe to use.
