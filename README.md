@@ -295,3 +295,180 @@ Authorization: This process occurs after authentication and determines what acti
 When a user provides their credentials (e.g., username and password), Django checks them against its database of registered users to verify the user's identity. If the credentials are correct, Django creates a session, which is stored on the server-side and identified by a session ID cookie on the user's browser. Once logged in, Django checks the user's permissions to determine what views, actions, or resources they are authorized to access, based on their role or group in the system. Django implements authentication using the auth framework and handles authorization through permissions and groups tied to users or models.
 
 ### How does Django remember logged-in users? Explain other uses of cookies and whether all cookies are safe to use.
+Django tracks logged-in users using sessions and cookies. When a user logs in, Django creates a session on the server and sends a session ID cookie to the user's browser, which is sent back with each request to keep the user logged in.
+Cookies can also store things like user preferences or security tokens, but they aren't always safe. They can be vulnerable to attacks like session hijacking or cross-site scripting (XSS). To protect cookies, developers can use Secure, HttpOnly, and SameSite settings to make them safer.
+
+### Implement the register, login, and logout functions so that the user can access the application freely.
+
+add this in view.py
+```
+def register(request):
+    form = UserCreationForm()
+
+    if request.method == "POST":
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your account has been successfully created!')
+            return redirect('main:login')
+    context = {'form':form}
+    return render(request, 'register.html', context)
+
+def login_user(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(data=request.POST)
+
+        if form.is_valid():
+            user = form.get_user()
+            if user is not None:
+                login(request, user)
+                response = HttpResponseRedirect(reverse("main:show_main"))
+                response.set_cookie('last_login', str(datetime.datetime.now()))
+                return response
+
+    else:
+        form = AuthenticationForm(request)
+        context = {'form': form}
+        return render(request, 'login.html', context)
+
+def logout_user(request):
+    logout(request)
+    response = HttpResponseRedirect(reverse('main:login'))
+    response.delete_cookie('last_login')
+    return response
+```
+
+make register.html:
+```
+{% extends 'base.html' %} {% block meta %}
+<title>Register</title>
+{% endblock meta %} {% block content %}
+
+<div class="login">
+  <h1>Register</h1>
+
+  <form method="POST">
+    {% csrf_token %}
+    <table>
+      {{ form.as_table }}
+      <tr>
+        <td></td>
+        <td><input type="submit" name="submit" value="Register" /></td>
+      </tr>
+    </table>
+  </form>
+
+  {% if messages %}
+  <ul>
+    {% for message in messages %}
+    <li>{{ message }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</div>
+
+{% endblock content %}
+```
+make login.html
+```
+{% extends 'base.html' %}
+
+{% block meta %}
+<title>Login</title>
+{% endblock meta %}
+
+{% block content %}
+<div class="login">
+  <h1>Login</h1>
+
+  <form method="POST" action="">
+    {% csrf_token %}
+    <table>
+      {{ form.as_table }}
+      <tr>
+        <td></td>
+        <td><input class="btn login_btn" type="submit" value="Login" /></td>
+      </tr>
+    </table>
+  </form>
+
+  {% if messages %}
+  <ul>
+    {% for message in messages %}
+    <li>{{ message }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %} Don't have an account yet?
+  <a href="{% url 'main:register' %}">Register Now</a>
+</div>
+
+{% endblock content %}
+```
+
+add the URL path to urlpatterns
+```
+    path('register/', register, name='register'),
+    path('login/', login_user, name='login'),
+    path('logout/', logout_user, name='logout'),
+```
+
+### make two user accounts with three dummy data each, using the model made in the application beforehand so that each data can be accessed by each account locally.
+
+![](image/firstacc.png)
+![](image/secacc.png)
+
+### Connect the models Product and User.
+import this in models.py
+```
+from django.contrib.auth.models import User
+```
+and also add this:
+```
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+```
+
+views.py:
+```
+def create_product_entry(request):
+    form = ProductForm(request.POST or None)
+
+    if form.is_valid() and request.method == "POST":
+        mood_entry = form.save(commit=False)
+        mood_entry.user = request.user
+        mood_entry.save()
+        return redirect('main:show_main')
+
+    context = {'form': form}
+    return render(request, "create_product_entry.html", context)
+```
+The code establishes a relationship between the Product model and Django's User model. By adding user = models.ForeignKey(User, on_delete=models.CASCADE), each mood entry is linked to a specific user. This ensures that every Product instance is associated with a user, meaning multiple mood entries can belong to one user. The on_delete=models.CASCADE option ensures that if a user is deleted, all their associated mood entries are deleted as well, maintaining database integrity. This setup is common when creating user-specific content in Django applications.
+
+### Display logged in user details such as username and apply cookies like last login to the application's main page.
+
+add this in show_main function 
+```
+def show_main(request):
+    product_entries = Product.objects.filter(user=request.user)
+
+    context = {
+        'myname': request.user.username,
+        'class': 'PBP KKI',
+        'product_entries': product_entries,
+        'last_login': request.COOKIES['last_login'],
+    }
+
+    return render(request, "main.html", context)
+```
+This view function retrieves user-specific product entries from the database, collects data into a context dictionary (including the user's last login time from a cookie), and passes it to the main.html template for rendering.
+
+and also add this in main.html to show logout button and last login
+```
+<a href="{% url 'main:create_product_entry' %}">
+  <button>Add New Product Entry</button>
+</a>
+<a href="{% url 'main:logout' %}">
+  <button>Logout</button>
+</a>
+<h5>Last login session: {{ last_login }}</h5>
+{% endblock content %}
+```
