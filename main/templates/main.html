@@ -2,9 +2,6 @@
 {% block content %}
 <h1>vin-shop</h1>
 
-<h5>NPM: </h5>
-<p>{{ npm }}<p>
-
 <h5>Name:</h5>
 <p>{{ myname }}</p>
 
@@ -40,4 +37,8 @@
 <a href="{% url 'main:create_product_entry' %}">
   <button>Add New Product Entry</button>
 </a>
+<a href="{% url 'main:logout' %}">
+  <button>Logout</button>
+</a>
+<h5>Last login session: {{ last_login }}</h5>
 {% endblock content %}
