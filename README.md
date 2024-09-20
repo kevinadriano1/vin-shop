@@ -1,7 +1,7 @@
 # vin-shop
 ## Link : http://kevin-adriano-vinshop.pbp.cs.ui.ac.id/
 
-## assignment 1
+## assignment 2
 
 ### 1. Create a new Django project:
 
@@ -144,7 +144,7 @@ Django is a high level framework that simplifies complexity, allows beginner to 
 ## 5. What is ORM?
 Django allows you to define your database schema using Python classes,ORM handles the translation between the object-oriented data model used in your application and the relational data model used in the database, When you create an instance of a model and save it, the ORM translates this operation into SQL commands that interact with the database, you can interact with the database using Python code rather than writing raw SQL queries
 
-## assignment 2
+## assignment 3
 
 ### 1. why we need data delivery in implementing a platform
 Data delivery plays a vital role in platform implementation by facilitating smooth communication between system components and users. It powers essential functions such as real-time interactions, data processing, and user engagement. Effective data delivery improves user experience, maintains data integrity and security, enables scalability, and ensures compliance with industry regulations.
@@ -269,7 +269,7 @@ JSON and JSON by id
 ![](image/localhost_json.png)
 ![](image/localhost_json_id.png)
 
-## assignment 3
+## assignment 4
 
 ### difference between HttpResponseRedirect() and redirect()
 HttpResponseRedirect requires a direct URL as an argument and manually sets the redirect location in the HTTP response. It's straightforward but less versatile. redirect() is a shortcut that offers more flexibility. It can accept a URL, view name, or model instance, automatically resolving to the appropriate redirect destination. Additionally, redirect() allows you to perform permanent redirects by setting a parameter, making it more convenient for various scenarios.
