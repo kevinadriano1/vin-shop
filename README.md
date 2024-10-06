@@ -939,3 +939,154 @@ make navbar.html in templates located in root directory and add the following co
 </nav>
 ```
 This code snippet creates a responsive navigation bar for a web application using Tailwind CSS. It features a title ("vin-shop") and links to Home, Products, Categories, and Cart, depending on user authentication. Authenticated users see a welcome message and a logout button, while non-authenticated users see login and registration buttons. A hamburger menu icon appears on mobile devices, toggling the mobile menu's visibility when clicked. This design ensures a user-friendly experience across different screen sizes.
+
+## assignment 6
+### Explain the benefits of using JavaScript in developing web applications!
+JavaScript plays a crucial role in modern web development by enhancing user experience, enabling real-time updates, and allowing for dynamic, interactive interfaces. Its ability to handle asynchronous interactions (AJAX) enables fast, real-time updates without reloading the page, improving application responsiveness. JavaScript runs client-side, reducing server load and providing instant feedback through form validation and event handling. Supported by all major browsers, it offers cross-platform compatibility and helps create responsive designs for various devices. With a rich ecosystem of frameworks and libraries like React, Vue.js, and jQuery, JavaScript accelerates development and simplifies tasks like DOM manipulation and state management.
+
+### Explain why we need to use await when we call fetch()! What would happen if we don't use await?
+We use await when calling fetch() in JavaScript because fetch() is an asynchronous function that returns a Promise. The await keyword ensures that JavaScript waits for the Promise to resolve before proceeding to the next line of code. When we use await, it pauses the execution of the code until the fetch() request completes and returns a response, allowing us to handle the result directly.
+
+### Why do we need to use the csrf_exempt decorator on the view used for AJAX POST?
+When making an AJAX POST request, if you don't include a valid CSRF token in the request header or form data, Django will reject the request by raising a 403 Forbidden error. In some cases, particularly during quick prototyping or when testing AJAX functionality, developers may bypass this protection by using the @csrf_exempt decorator to disable CSRF protection for that specific view.
+
+### On this week's tutorial, the user input sanitization is done in the back-end as well. Why can't the sanitization be done just in the front-end?
+Users can manipulate or disable JavaScript in their browser, potentially bypassing any front-end validation or sanitization. Malicious users could send harmful input directly to the server, making back-end sanitization essential for protection.
+
+### AJAX GET Modify the codes in data cards to able to use AJAX GET. Retrieve data using AJAX GET. Make sure that the datas retrieved are only the datas belonging to the logged in user. 
+
+add this script in main.html
+```
+async function getProductEntries(){
+      return fetch("{% url 'main:show_json' %}").then((res) => res.json())
+  }
+```
+The function getProductEntries() sends an AJAX GET request to the Django backend
+
+```
+async function refreshProductEntries() {
+    // Clear the existing product cards
+    document.getElementById("product_entry_cards").innerHTML = "";
+    document.getElementById("product_entry_cards").className = "";
+
+    // Retrieve product entries via AJAX GET
+    const productEntries = await getProductEntries();
+    let htmlString = "";
+    let classNameString = "";
+
+    // Check if there are any product entries
+    if (productEntries.length === 0) {
+        classNameString = "flex flex-col items-center justify-center min-h-[24rem] p-6";
+        htmlString = `
+            <div class="flex flex-col items-center justify-center min-h-[24rem] p-6">
+                <img src="{% static 'image/sedih-banget.png' %}" alt="Sad face" class="w-32 h-32 mb-4"/>
+                <p class="text-center text-gray-600 mt-4">No product data on the vinshop.</p>
+            </div>
+        `;
+    } else {
+        classNameString = "columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6 w-full";
+        productEntries.forEach((item) => {
+            const name = DOMPurify.sanitize(item.fields.name);
+            const price = DOMPurify.sanitize(item.fields.price);
+            const description = DOMPurify.sanitize(item.fields.description);
+            htmlString += `
+            <div class="relative break-inside-avoid">
+              <div class="relative top-5 bg-blue-100 shadow-md rounded-lg mb-6 break-inside-avoid flex flex-col border-2 border-blue-300 transform rotate-1 hover:rotate-0 transition-transform duration-300">
+                  <div class="bg-blue-200 text-gray-800 p-4 rounded-t-lg border-b-2 border-blue-300">
+                      <h3 class="font-bold text-xl mb-2">${name}</h3>
+                  </div>
+                  <div class="p-4">
+                      <p class="font-semibold text-lg mb-2">Price: $${price}</p>
+                      <p class="font-semibold text-lg mb-2">Description: ${description}</p>
+                  </div>
+              </div>
+            </div>
+            `;
+        });
+    }
+
+    // Update the product card container with new content
+    document.getElementById("product_entry_cards").className = classNameString;
+    document.getElementById("product_entry_cards").innerHTML = htmlString;
+}
+```
+
+### Create a button that opens a modal with a form for adding a mood entry.
+add this in main.html:
+
+```
+<button data-modal-target="crudModal" data-modal-toggle="crudModal" class="bg-blue-400 hover:bg-blue-400 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105" onclick="showModal();">
+          Add New Product Entry by AJAX
+</button>
+```
+
+### Create a new view function to add a new mood entry to the database.
+add this in view.py
+```
+@csrf_exempt
+@require_POST
+def add_product_entry_ajax(request):
+    name = strip_tags(request.POST.get("name"))
+    price = strip_tags(request.POST.get("price"))
+    description = strip_tags(request.POST.get("description"))
+    rating = request.POST.get("rating")
+    user = request.user
+
+
+
+    new_product = Product(
+        name=name, price=price, 
+        description=description, 
+        rating=rating, user=user
+       
+    )
+    new_product.save()
+
+    return HttpResponse(b"CREATED", status=201)
+```
+
+### Create a /create-ajax/ path that routes to the new view function you created.
+add this in your urls.py
+```
+path('create-ajax/', add_product_entry_ajax, name='add_product_entry_ajax'),
+```
+
+### Connect the form you created inside the modal to the /create-ajax/ path.
+```
+add this in main.html
+function addProductEntry() {
+    fetch("{% url 'main:add_product_entry_ajax' %}", {
+      method: "POST",
+      body: new FormData(document.querySelector('#ProductForm')),
+    })
+    .then(response => refreshProductEntries())
+
+    document.getElementById("ProductForm").reset(); 
+    document.querySelector("[data-modal-toggle='crudModal']").click();
+    document.getElementById("submitProductEntry").onclick = addProductEntry
+    return false;
+  }
+document.getElementById("ProductForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  addProductEntry();
+})
+```
+
+### perform asynchronous refresh on the main page to display the latest item list without reloading the entire main page.
+add this in main.html:
+```
+refreshProductEntries();
+  const modal = document.getElementById('crudModal');
+  const modalContent = document.getElementById('crudModalContent');
+
+  function showModal() {
+      const modal = document.getElementById('crudModal');
+      const modalContent = document.getElementById('crudModalContent');
+
+      modal.classList.remove('hidden'); 
+      setTimeout(() => {
+        modalContent.classList.remove('opacity-0', 'scale-95');
+        modalContent.classList.add('opacity-100', 'scale-100');
+      }, 50); 
+  }
+```
